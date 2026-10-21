@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Buyer Profiles API · Percy External API</title>
+<meta name="description" content="Read the buyer profiles (My Buyers) of your brokerages: a paginated list and the full detail of each buyer.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="index" aria-label="Sections">
+    <h2>Getting started</h2>
+    <ol>
+      <li><a href="../">Overview</a></li>
+      <li><a href="../#auth">Authentication</a></li>
+      <li><a href="../#errors">Errors and limits</a></li>
+      <li><a href="../#support">Support</a></li>
+    </ol>
+    <h2>Buyer Profiles</h2>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#list">List buyers</a></li>
+      <li><a href="#detail">Get one buyer</a></li>
+      <li><a href="#response">Response format</a></li>
+      <li><a href="#examples">Examples</a></li>
+      <li><a href="#errors">Errors</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="intro" id="overview">
+      <p class="eyebrow"><a href="../">Percy External API</a> · Integration guide</p>
+      <h1>Buyer Profiles API</h1>
+      <p class="lede">Read the buyer profiles (My Buyers) of the brokerages your credential covers: a paginated list and the full detail of each buyer, as JSON over HTTPS.</p>
+      <ul class="facts">
+        <li><strong>Read-only</strong> · GET</li>
+        <li><strong>2</strong> endpoints</li>
+        <li><strong>100</strong> buyers per page max</li>
+        <li>Updated October 21, 2026</li>
+      </ul>
+      <p style="margin-top:18px">Requests authenticate as described in <a href="../#auth">Authentication</a>. Your credential must include the <code>/buyers/profiles</code> routes.</p>
+    </header>
+
+    <section id="list">
+      <h2>Endpoints</h2>
+      <div class="endpoint">
+        <div class="sig"><span class="method">GET</span><span class="path">/buyers/profiles</span></div>
+        <h3>List buyer profiles</h3>
+        <p>Returns a page of buyers, newest first by default. Every parameter is optional.</p>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Parameter</th><th>Values</th><th>Default</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td><code>status</code></td><td><code>active</code> · <code>inactive</code> · <code>all</code></td><td>active</td><td>Active = active or non-verified, target purchase date not yet passed. Inactive = inactive, or target date passed.</td></tr>
+            <tr><td><code>brokerage_id</code></td><td>integer</td><td>all yours</td><td>One of your brokerages; any other returns 403.</td></tr>
+            <tr><td><code>brand_id</code></td><td>integer</td><td>all yours</td><td>Your brokerages in that brand; another brand returns 403.</td></tr>
+            <tr><td><code>agent_id</code></td><td>integer</td><td>—</td><td>Buyers assigned to that agent.</td></tr>
+            <tr><td><code>office_id</code></td><td>integer</td><td>—</td><td>Buyers created under that office. Not combinable with <code>agent_id</code>.</td></tr>
+            <tr><td><code>zip</code></td><td>text, ≤ 10</td><td>—</td><td>Buyers with that zip code among their search areas.</td></tr>
+            <tr><td><code>property_type_id</code></td><td>integer</td><td>—</td><td>Buyers looking for that property type.</td></tr>
+            <tr><td><code>q</code></td><td>text, ≤ 255</td><td>—</td><td>Search in the buyer's first name, last name or email.</td></tr>
+            <tr><td><code>sort</code></td><td><code>buyer_id</code> · <code>first_name</code> · <code>last_name</code> · <code>email</code> · <code>created</code> · <code>updated</code> · <code>target_price</code> · <code>maximum_price</code> · <code>target_purchase_date</code> · <code>star_rating</code></td><td>buyer_id</td><td>Sort field.</td></tr>
+            <tr><td><code>dir</code></td><td><code>asc</code> · <code>desc</code></td><td>desc for buyer_id, else asc</td><td>Sort direction.</td></tr>
+            <tr><td><code>page</code></td><td>integer ≥ 1</td><td>1</td><td>Page number.</td></tr>
+            <tr><td><code>per_page</code></td><td>1–100</td><td>25</td><td>Page size.</td></tr>
+          </tbody>
+        </table></div>
+      </div>
+
+      <div class="endpoint" id="detail">
+        <div class="sig"><span class="method">GET</span><span class="path">/buyers/profiles/{buyer_id}</span></div>
+        <h3>Get one buyer profile</h3>
+        <p style="margin:0">Returns the full profile of one buyer. A buyer outside your brokerages returns 404, the same as one that does not exist.</p>
+      </div>
+    </section>
+
+    <section id="response">
+      <h2>Response format</h2>
+      <p>The list returns <code>{"data": [...], "meta": {...}}</code>; the detail returns <code>{"data": {...}}</code>. Dates are <code>YYYY-MM-DD</code>, timestamps are ISO 8601 in UTC, and a missing value is <code>null</code>.</p>
+      <p><strong>Pagination.</strong> <code>meta</code> carries <code>page</code>, <code>per_page</code>, <code>total</code> (buyers matching your filters) and <code>last_page</code>. Keep requesting pages until <code>page</code> equals <code>last_page</code>.</p>
+
+      <h3>Fields in the list and the detail</h3>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Field</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td><code>buyer_id</code></td><td>Buyer profile id.</td></tr>
+          <tr><td><code>status</code>, <code>is_active</code></td><td><code>active</code>, <code>inactive</code>, <code>non_verified</code>, <code>deleted</code> or <code>unlisted</code>. <code>is_active</code> is true for active and non-verified.</td></tr>
+          <tr><td><code>user</code></td><td>The buyer: id, first and last name, email, primary phone.</td></tr>
+          <tr><td><code>agent</code>, <code>brand</code>, <code>brokerage</code>, <code>office</code></td><td>Who the buyer belongs to, each with id and name.</td></tr>
+          <tr><td><code>bedrooms</code>, <code>is_studio</code>, <code>bathrooms</code></td><td>Bedroom and bathroom criteria.</td></tr>
+          <tr><td><code>target_price</code>, <code>maximum_price</code></td><td>Budget, in US dollars.</td></tr>
+          <tr><td><code>target_purchase_date</code></td><td>When the buyer plans to buy.</td></tr>
+          <tr><td><code>prequalified</code></td><td><code>none</code>, <code>pre_qualified</code>, <code>pre_approved</code> or <code>cash</code>.</td></tr>
+          <tr><td><code>star_rating</code></td><td>The agent's rating of the buyer.</td></tr>
+          <tr><td><code>matching_email_alert</code></td><td>Listing alerts: <code>off</code>, <code>to_agent</code> or <code>to_buyer</code>.</td></tr>
+          <tr><td><code>source_type</code>, <code>source</code></td><td>Origin: <code>MANUAL</code>, <code>IMPORT</code>, <code>INQUIRY</code>, <code>SAVED_SEARCH</code>, <code>SAVED_PROPERTY</code>, <code>SHOWING</code>, <code>OPEN_HOUSE</code>, <code>FEED</code> or <code>UNKNOWN</code>, plus the feed or import name.</td></tr>
+          <tr><td><code>created</code></td><td>When the profile was created.</td></tr>
+        </tbody>
+      </table></div>
+
+      <h3>Extra fields in the detail</h3>
+      <ul class="fieldlist">
+        <li><span>Buyer</span> secondary phone, address, city, state, zip</li>
+        <li><span>Assignment</span> <code>team_id</code>, <code>office_id</code></li>
+        <li><span>Property</span> square footage, property age, parking, floors, lot size, full and half bathrooms</li>
+        <li><span>Financing</span> down payment, monthly payment, prequalified by and amount, payment methods, buyer types, must sell first</li>
+        <li><span>Notes</span> <code>comment</code>, <code>private_comments</code></li>
+        <li><span>Agreement</span> <code>buyer_rep_agreement</code>: signed, expire date, file name</li>
+        <li><span>Search areas</span> <code>locations</code> (zip, city, county, state), <code>property_type_ids</code>, <code>school_districts</code>, <code>townships</code></li>
+        <li><span>Audit</span> created by, updated by, updated, first and last ingestion time</li>
+      </ul>
+    </section>
+
+    <section id="examples">
+      <h2>Examples</h2>
+      <p>Values are placeholders. The sample response is made up and does not describe a real buyer.</p>
+
+      <h3>Active buyers of one agent, highest target price first</h3>
+      <div class="code"><div class="label">Request</div><button type="button" data-copy="ex1">Copy</button>
+<pre id="ex1"><span class="k">curl</span> -s <span class="s">"https://api.getbuyside.com/v1/buyers/profiles?agent_id=123456&amp;status=active&amp;sort=target_price&amp;dir=desc&amp;per_page=50"</span> \
+  -H <span class="s">"Authorization: Basic $(printf '%s' "$CLIENT_ID:$CLIENT_SECRET" | base64)"</span> \
+  -H <span class="s">"x-api-key: $API_KEY"</span></pre></div>
+
+      <div class="code"><div class="label">Response · 200</div><button type="button" data-copy="ex2">Copy</button>
+<pre id="ex2">{
+  "data": [
+    {
+      "buyer_id": 9876543,
+      "status": "active",
+      "is_active": true,
+      "user": { "user_id": 555001, "first_name": "Jane", "last_name": "Doe",
+                "email": "jane.doe@example.com", "primary_phone": "555-0100" },
+      "agent": { "agent_id": 123456, "first_name": "Alex", "last_name": "Smith",
+                 "email": "alex.smith@example.com" },
+      "brand": { "brand_id": 1001, "brand_name": "Example Brand" },
+      "brokerage": { "brokerage_id": 2002, "brokerage_name": "Example Brokerage" },
+      "office": { "office_id": 3003, "office_name": "Main Office" },
+      "bedrooms": 3,
+      "is_studio": false,
+      "bathrooms": 2,
+      "target_price": 450000,
+      "maximum_price": 500000,
+      "target_purchase_date": "2027-03-01",
+      "prequalified": "pre_approved",
+      "star_rating": 4,
+      "matching_email_alert": "to_buyer",
+      "source_type": "INQUIRY",
+      "source": "ZILLOW",
+      "created": "2026-08-12T14:03:00+00:00"
+    }
+  ],
+  "meta": { "page": 1, "per_page": 50, "total": 1, "last_page": 1 }
+}</pre></div>
+
+      <h3>Full profile of one buyer</h3>
+      <div class="code"><div class="label">Request</div><button type="button" data-copy="ex3">Copy</button>
+<pre id="ex3"><span class="k">curl</span> -s <span class="s">"https://api.getbuyside.com/v1/buyers/profiles/9876543"</span> \
+  -H <span class="s">"Authorization: Basic $(printf '%s' "$CLIENT_ID:$CLIENT_SECRET" | base64)"</span> \
+  -H <span class="s">"x-api-key: $API_KEY"</span></pre></div>
+    </section>
+
+    <section id="errors">
+      <h2>Errors</h2>
+      <p>The common statuses, quota and timeout are in <a href="../#errors">Errors and limits</a>. On these routes:</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Status</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td class="status">400</td><td>A parameter is invalid: wrong type, out of range, <code>per_page</code> over 100, <code>office_id</code> with <code>agent_id</code>, or a <code>brokerage_id</code> outside the <code>brand_id</code> sent.</td></tr>
+          <tr><td class="status">403</td><td><code>brokerage_id</code> or <code>brand_id</code> outside your scope, or a credential without the <code>/buyers/profiles</code> routes.</td></tr>
+          <tr><td class="status">404</td><td>The buyer does not exist or is outside your scope.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="note"><p><strong>Known limitation.</strong> On very large scopes (over a million buyers), the <code>q</code> search and sorting by <code>first_name</code>, <code>last_name</code> or <code>email</code> can take longer than 29 seconds and return 504. We are improving it. Until then, narrow the request with <code>agent_id</code>, <code>office_id</code>, <code>brokerage_id</code> or <code>zip</code>, and keep the default sort.</p></div>
+    </section>
+
+    <footer>Percy External API · Buyer Profiles · version 1 · October 2026</footer>
+  </main>
+</div>
+<script src="../assets/copy.js"></script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Percy External API</title>
+<meta name="description" content="Integration guides for the Percy External API: authentication, limits, errors and the available APIs.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Public+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="shell">
+  <nav class="index" aria-label="Site">
+    <h2>Getting started</h2>
+    <ol>
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#auth">Authentication</a></li>
+      <li><a href="#errors">Errors and limits</a></li>
+      <li><a href="#support">Support</a></li>
+    </ol>
+    <h2>APIs</h2>
+    <ol>
+      <li><a href="buyer-profiles/">Buyer Profiles</a></li>
+    </ol>
+  </nav>
+
+  <main>
+    <header class="intro" id="overview">
+      <p class="eyebrow">Percy · Integration guides</p>
+      <h1>Percy External API</h1>
+      <p class="lede">Read the data of the brokerages your credential covers, as JSON over HTTPS. Every API on this site shares the same authentication, limits and error format, described on this page.</p>
+      <ul class="facts">
+        <li><strong>Base URL</strong> · <code>https://api.getbuyside.com/v1</code></li>
+        <li><strong>100,000</strong> requests / month per key</li>
+        <li><strong>29 s</strong> max per request</li>
+      </ul>
+      <div class="flow" aria-label="What happens on every request">
+        <div><b>1 · Authenticate</b><span>Client credentials and API key are checked.</span></div>
+        <div><b>2 · Scope</b><span>Results are limited to your brokerages; filters only narrow them.</span></div>
+        <div><b>3 · Respond</b><span>JSON with the data, or an error with its cause.</span></div>
+      </div>
+    </header>
+
+    <section id="apis">
+      <h2>Available APIs</h2>
+      <ul class="apis">
+        <li><a href="buyer-profiles/"><b>Buyer Profiles</b><span>The buyer profiles (My Buyers) of your brokerages: a paginated list and the full detail of each buyer. <span class="path">/buyers/profiles</span></span></a></li>
+      </ul>
+    </section>
+
+    <section id="auth">
+      <h2>Authentication</h2>
+      <p>Every request sends two headers: your client credentials in <code>Authorization</code> and your API key in <code>x-api-key</code>. Both are delivered to you through a secure channel, never by email or chat.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Item</th><th>Value</th></tr></thead>
+        <tbody>
+          <tr><td>Base URL</td><td><code>https://api.getbuyside.com/v1</code></td></tr>
+          <tr><td>Authorization</td><td><code>Basic &lt;base64 of client_id:client_secret&gt;</code></td></tr>
+          <tr><td>x-api-key</td><td>Your API key</td></tr>
+          <tr><td>Scope</td><td>The brokerages and the routes assigned to your credential. Each API page says which routes it covers.</td></tr>
+        </tbody>
+      </table></div>
+      <div class="code"><div class="label">Every request</div><button type="button" data-copy="auth1">Copy</button>
+<pre id="auth1"><span class="k">curl</span> -s <span class="s">"https://api.getbuyside.com/v1/&lt;route&gt;"</span> \
+  -H <span class="s">"Authorization: Basic $(printf '%s' "$CLIENT_ID:$CLIENT_SECRET" | base64)"</span> \
+  -H <span class="s">"x-api-key: $API_KEY"</span></pre></div>
+      <p>Keep the client secret and API key on your servers. Do not embed them in a browser or mobile app, and tell us right away if you think they were exposed so we can rotate them.</p>
+    </section>
+
+    <section id="errors">
+      <h2>Errors and limits</h2>
+      <p>Errors return JSON with a <code>Message</code> that explains the cause. Each API page lists the cases specific to its routes.</p>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Status</th><th>When</th></tr></thead>
+        <tbody>
+          <tr><td class="status">400</td><td>A parameter is invalid: wrong type, out of range or not allowed with another one.</td></tr>
+          <tr><td class="status">401 / 403</td><td>Missing or invalid credentials or API key, or a route your credential does not cover.</td></tr>
+          <tr><td class="status">404</td><td>The record does not exist or is outside your scope.</td></tr>
+          <tr><td class="status">429</td><td>Too many requests, or the monthly quota is used up.</td></tr>
+          <tr><td class="status">504</td><td>The request took longer than 29 seconds.</td></tr>
+        </tbody>
+      </table></div>
+      <p><strong>Quota.</strong> Each API key allows up to 100,000 requests per month across all routes. Contact us if you expect more.</p>
+    </section>
+
+    <section id="support">
+      <h2>Support</h2>
+      <p>For questions, a new credential, more quota or a suspected exposure of your keys, contact your Percy account team. Include the time of the request (UTC), the endpoint and the HTTP status. Never send the client secret or the API key.</p>
+    </section>
+
+    <footer>Percy External API · version 1 · October 2026</footer>
+  </main>
+</div>
+<script src="assets/copy.js"></script>
+</body>
+</html>
